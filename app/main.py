@@ -1,7 +1,10 @@
+import os
 import streamlit as st
 import cv2
 import numpy as np
 from PIL import Image
+from dotenv import load_dotenv
+from inference_sdk import InferenceHTTPClient
 
 def biggestContour(contours):
     biggest = np.array([])
@@ -65,6 +68,9 @@ def processImage(file):
     return imgOutput
 
 def main():
+    load_dotenv()
+    key = os.getenv("API_KEY")
+    
     st.title("Toeic")
     st.write("Toeic information extractor") 
     
@@ -81,10 +87,16 @@ def main():
         file.seek(0) 
         imgTrans = processImage(file)
         
+        CLIENT = InferenceHTTPClient("https://detect.roboflow.com", key)
+        
+        result = CLIENT.infer("../Original.jpg", "toeic/3")
+        
         if imgTrans is not None:
             with col2:
                 st.subheader("Transformed Image")
                 st.image(imgTrans, channels="BGR", use_column_width=True)
+                
+        st.write("Result: ", result)
 
 if __name__ == "__main__":
     main()
