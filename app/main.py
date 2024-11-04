@@ -1,20 +1,30 @@
 import os
-import streamlit as st
+import streamlit as st  
 import cv2
 import numpy as np
 from PIL import Image
 from dotenv import load_dotenv
 from inference_sdk import InferenceHTTPClient
 
-def biggestContour(contours):
+def biggestContour(contours, image):
     biggest = np.array([])
     maxArea = 0
+    ExpectedAspectRatio = 2
+    imgWidth, imgHeight = image.shape[:2]
+    
     for i in contours:
         area = cv2.contourArea(i)
-        if area > 1000:
-            perimeter = cv2.arcLength(i, True)
-            approx = cv2.approxPolyDP(i, 0.02 * perimeter, True)
-            if area > maxArea and len(approx) == 4:
+        if area < 1000:
+            continue
+        perimeter = cv2.arcLength(i, True)
+        approx = cv2.approxPolyDP(i, 0.02 * perimeter, True)
+        
+        if area > maxArea and len(approx) == 4:
+            x, y, w, h = cv2.boundingRect(approx)
+            if w < 0.1 * imgWidth or h < 0.1 * imgHeight:
+                continue
+            aspectRatio = w / float(h)
+            if 0.9 * ExpectedAspectRatio < aspectRatio < 1.1 * ExpectedAspectRatio:
                 biggest = approx
                 maxArea = area
     return biggest
@@ -23,7 +33,8 @@ def preprocessImage(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = cv2.bilateralFilter(gray, 11, 17, 17)
     blur = cv2.GaussianBlur(gray, (3, 3), 0)
-    canny = cv2.Canny(blur, 30, 200)
+    thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    canny = cv2.Canny(thresh, 30, 200)
     return canny
 
 def getTransformedImage(image, points):
@@ -58,12 +69,11 @@ def processImage(file):
     
     contours, _ = cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     contours = sorted(contours, key=cv2.contourArea, reverse=True)
-    biggest = biggestContour(contours)
+    biggest = biggestContour(contours, imgOrg)
     
     if biggest.size == 0:
-        st.error("Please upload an image with clear 4 corners")
-        return None
-    
+        return imgOrg
+        
     imgOutput = getTransformedImage(imgOrg, biggest)
     return imgOutput
 
@@ -87,16 +97,17 @@ def main():
         file.seek(0) 
         imgTrans = processImage(file)
         
-        CLIENT = InferenceHTTPClient("https://detect.roboflow.com", key)
-        
-        result = CLIENT.infer("../Original.jpg", "toeic/3")
-        
         if imgTrans is not None:
+            
+            CLIENT = InferenceHTTPClient("https://detect.roboflow.com", key)
+            result = CLIENT.infer(imgTrans, "toeic/3")
+            print(result)
+            st.write("Result: ", result)
+            
             with col2:
                 st.subheader("Transformed Image")
                 st.image(imgTrans, channels="BGR", use_column_width=True)
                 
-        st.write("Result: ", result)
 
 if __name__ == "__main__":
     main()
