@@ -99,14 +99,32 @@ def main():
         
         if imgTrans is not None:
             
-            CLIENT = InferenceHTTPClient("https://detect.roboflow.com", key)
-            result = CLIENT.infer(imgTrans, "toeic/3")
-            print(result)
-            st.write("Result: ", result)
-            
             with col2:
                 st.subheader("Transformed Image")
                 st.image(imgTrans, channels="BGR", use_column_width=True)
+            
+        CLIENT = InferenceHTTPClient("https://detect.roboflow.com", key)
+        result = CLIENT.infer(imgTrans, "toeic/3")
+        
+        # st.write(result)
+        
+        predictions = result.get('predictions', [])
+        print(predictions)
+        
+        for pred in predictions:
+            x = int(pred['x'])
+            y = int(pred['y'])
+            width = int(pred['width'])
+            height = int(pred['height'])
+            class_name = pred['class']
+            
+            x -= width // 2
+            y -= height // 2
+            
+            cropped_img = imgTrans[y:y+height, x:x+width]
+            
+            st.subheader(class_name)
+            st.image(cropped_img, channels="BGR", use_column_width=True)
                 
 
 if __name__ == "__main__":
