@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - 'main'
+      - "main"
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -26,5 +26,6 @@ jobs:
       - name: Run your application
         env:
           API_KEY: ${{ secrets.API_KEY }}
+          EMAIL: ""
         run: |
           streamlit run app/main.py
