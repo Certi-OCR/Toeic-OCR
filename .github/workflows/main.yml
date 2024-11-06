@@ -28,4 +28,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha, mode=max
           push: true
-          tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+          tags: ${{ lower(vars.DOCKER_USERNAME) }}/${{ lower(github.event.repository.name) }}:latest
+
