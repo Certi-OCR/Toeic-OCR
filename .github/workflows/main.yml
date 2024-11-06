@@ -5,6 +5,9 @@ on:
     branches:
       - "main"
 
+env:
+  REPO: ${{ github.event.repository.name }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,5 +31,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha, mode=max
           push: true
-          tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name },,}:latest
+          tags: ${{ vars.DOCKER_USERNAME }}/${REPO,,}:latest
 
