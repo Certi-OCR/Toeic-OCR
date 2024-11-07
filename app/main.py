@@ -3,7 +3,7 @@ import streamlit as st
 from PIL import Image
 from dotenv import load_dotenv
 from image_processing import processImage
-from text_recognization import text_ocr
+from text_recognization import text_recognize
 from inference import image_predictions
 
 def main():
@@ -31,10 +31,14 @@ def main():
                 st.subheader("Transformed Image")
                 st.image(imgTrans, channels="BGR", use_column_width=True)
             
-            cropped_images = image_predictions(imgTrans, key)
+            croppedImages = image_predictions(imgTrans, key)
             
-            for class_name, cropped_img in cropped_images.items():
-                st.subheader(f"{class_name}: {text_ocr(cropped_img)[0]}")
-                st.image(cropped_img, channels="BGR", use_column_width=True)
+            for className, croppedImg in croppedImages.items():
+                text = text_recognize(croppedImg)
+                if text is not None:
+                    st.subheader(f"{className}: {text[0]}")
+                else:
+                    st.subheader(f"{className}: No text found")
+                st.image(croppedImg, channels="BGR")
 if __name__ == "__main__":
     main()
