@@ -3,7 +3,7 @@ from inference_sdk import InferenceHTTPClient
 
 def image_predictions(img, api_key):
     CLIENT = InferenceHTTPClient("https://detect.roboflow.com", api_key)
-    result = CLIENT.infer(img, "toeic/3")
+    result = CLIENT.infer(img, "toeic/6")
     predictions =  result.get('predictions', [])
     
     cropped_images = {}
