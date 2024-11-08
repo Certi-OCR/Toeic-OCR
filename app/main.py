@@ -1,5 +1,7 @@
 import os
 import streamlit as st
+import blur_detector
+import cv2
 from PIL import Image
 from dotenv import load_dotenv
 from image_processing import processImage
@@ -17,11 +19,13 @@ def main():
     
     if file is not None:
         imgOrg = Image.open(file)
+        blurmap = blur_detector.detectBlur(file)
+        
         col1, col2 = st.columns(2)
         
         with col1:
             st.subheader("Original Image")
-            st.image(imgOrg, use_column_width=True)
+            st.image(imgOrg, use_container_width=True)
         
         file.seek(0) 
         imgTrans = processImage(file)
@@ -29,7 +33,7 @@ def main():
         if imgTrans is not None:
             with col2:
                 st.subheader("Transformed Image")
-                st.image(imgTrans, channels="BGR", use_column_width=True)
+                st.image(imgTrans, channels="BGR", use_container_width=True)
             
             croppedImages = image_predictions(imgTrans, key)
             

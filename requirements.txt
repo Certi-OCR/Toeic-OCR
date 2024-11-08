@@ -6,3 +6,5 @@ python-dotenv
 inference
 paddlepaddle
 paddleocr
+blur-detector
+imutils
