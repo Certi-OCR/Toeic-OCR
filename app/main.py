@@ -1,7 +1,5 @@
 import os
 import streamlit as st
-import blur_detector
-import cv2
 from PIL import Image
 from dotenv import load_dotenv
 from image_processing import processImage
@@ -19,7 +17,6 @@ def main():
     
     if file is not None:
         imgOrg = Image.open(file)
-        blurmap = blur_detector.detectBlur(file)
         
         col1, col2 = st.columns(2)
         
