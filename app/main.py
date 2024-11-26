@@ -1,45 +1,35 @@
-import os
-import streamlit as st
-from PIL import Image
-from dotenv import load_dotenv
-from image_processing import processImage
-from text_recognization import text_recognize
-from inference import image_predictions
+from fastapi import FastAPI, File
+from ultralytics import YOLO
+from .image_utils import bytes2image
+from .inference import image_predictions
+from .image_processing import processImage
+from .text_recognization import text_recognize
+import json
 
-def main():
-    st.set_page_config(page_title="Toeic Extractor")
-    load_dotenv()
-    key = os.getenv("API_KEY")
+app = FastAPI()
+model = YOLO("model/toeicLR.pt")
+
+@app.get("/")
+async def root():
+ return {"message": "Hello, World!"}
+
+@app.post("/detect/")
+async def extract_information_from_image(file: bytes = File(...)):
+    result = {}
+    input_image = bytes2image(file)
+    img_trans = processImage(input_image)
+    predict = image_predictions(model, img_trans)
+    detect_res = predict[['name', 'confidence', 'xmin', 'ymin', 'xmax', 'ymax']]
+        
+    texts = []
     
-    st.title("Toeic Certificate Information Extractor")
+    for index, row in detect_res.iterrows():
+        xmin, ymin, xmax, ymax = row[['xmin', 'ymin', 'xmax', 'ymax']].astype(int)
+        cropped_image = img_trans[ymin:ymax, xmin:xmax]
+        text = text_recognize(cropped_image)
+        texts.append({'content': text[0], 'confidence': text[1]})
     
-    file = st.file_uploader("Upload your Toeic Certificate (L & R)", type=["jpg", "jpeg", "png", "webp"])
+    detect_res['text'] = texts
     
-    if file is not None:
-        imgOrg = Image.open(file)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.subheader("Original Image")
-            st.image(imgOrg, use_container_width=True)
-        
-        file.seek(0) 
-        imgTrans = processImage(file)
-        
-        if imgTrans is not None:
-            with col2:
-                st.subheader("Transformed Image")
-                st.image(imgTrans, channels="BGR", use_container_width=True)
-            
-            croppedImages = image_predictions(imgTrans, key)
-            
-            for className, croppedImg in croppedImages.items():
-                text = text_recognize(croppedImg)
-                if text is not None:
-                    st.subheader(f"{className}: {text[0]}")
-                else:
-                    st.subheader(f"{className}: No text found")
-                st.image(croppedImg, channels="BGR")
-if __name__ == "__main__":
-    main()
+    result['results'] = json.loads(detect_res[['name', 'confidence', 'text']].to_json(orient='records'))
+    return result

@@ -1,10 +1,7 @@
-streamlit
+ultralytics
 opencv-python-headless
-numpy
-pillow
-python-dotenv
-inference
 paddlepaddle
 paddleocr
-blur-detector
-imutils
+fastapi[all]
+uvicorn[standard]
+gunicorn

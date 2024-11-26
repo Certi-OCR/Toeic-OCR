@@ -56,9 +56,8 @@ def getTransformedImage(image, points):
     imgOutput = cv2.warpPerspective(image, matrix, (maxWidth, maxHeight))
     return imgOutput
 
-def processImage(file):
-    fileBytes = np.asarray(bytearray(file.read()), dtype=np.uint8)
-    imgOrg = cv2.imdecode(fileBytes, cv2.IMREAD_COLOR)
+def processImage(image):
+    imgOrg = np.array(image)
     
     canny = preprocessImage(imgOrg.copy())
     

@@ -1,20 +1,14 @@
-from PIL import Image
-from inference_sdk import InferenceHTTPClient
+from ultralytics import YOLO
+import pandas as pd
 
-def image_predictions(img, api_key):
-    CLIENT = InferenceHTTPClient("https://detect.roboflow.com", api_key)
-    result = CLIENT.infer(img, "toeic/6")
-    predictions =  result.get('predictions', [])
-    
-    cropped_images = {}
-    for pred in predictions:
-        x = int(pred['x'])
-        y = int(pred['y'])
-        width = int(pred['width'])
-        height = int(pred['height'])
-        class_name = pred['class']
-        x -= width // 2
-        y -= height // 2
-        crop = img[y:y+height, x:x+width]
-        cropped_images[class_name] = crop
-    return cropped_images
+def predictions_to_df(results: list, labeles_dict: dict) -> pd.DataFrame:
+    predict_bbox = pd.DataFrame(results[0].to("cpu").numpy().boxes.xyxy, columns=['xmin', 'ymin', 'xmax', 'ymax'])
+    predict_bbox['confidence'] = results[0].to("cpu").numpy().boxes.conf
+    predict_bbox['class'] = (results[0].to("cpu").numpy().boxes.cls).astype(int)
+    predict_bbox['name'] = predict_bbox["class"].replace(labeles_dict)
+    return predict_bbox
+
+def image_predictions(model: YOLO, input) -> pd.DataFrame:
+    predictions = model.predict(source=input, conf=0.5, imgsz=640, augment=False)  
+    df = predictions_to_df(predictions, model.names) 
+    return df
