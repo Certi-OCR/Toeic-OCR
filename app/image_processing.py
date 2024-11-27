@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from PIL import Image
 
 def biggestContour(contours, image):
     biggest = np.array([])
@@ -56,7 +57,7 @@ def getTransformedImage(image, points):
     imgOutput = cv2.warpPerspective(image, matrix, (maxWidth, maxHeight))
     return imgOutput
 
-def processImage(image):
+def processImage(image: Image) -> Image:
     imgOrg = np.array(image)
     
     canny = preprocessImage(imgOrg.copy())
