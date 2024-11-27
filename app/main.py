@@ -1,10 +1,13 @@
 from fastapi import FastAPI, File
+from fastapi.responses import StreamingResponse, JSONResponse
 from ultralytics import YOLO
-from .image_utils import bytes2image
+from pandas import json_normalize
+from .image_utils import bytes2image, image2bytes
 from .inference import image_predictions
 from .image_processing import processImage
 from .text_recognization import text_recognize
-import json
+from .render_bbox import add_bboxs_on_img
+
 
 app = FastAPI()
 model = YOLO("model/toeicLR.pt")
@@ -13,14 +16,12 @@ model = YOLO("model/toeicLR.pt")
 async def root():
  return {"message": "Hello, World!"}
 
-@app.post("/detect/")
+@app.post("/img_to_json")
 async def extract_information_from_image(file: bytes = File(...)):
-    result = {}
     input_image = bytes2image(file)
     img_trans = processImage(input_image)
-    predict = image_predictions(model, img_trans)
+    predict = image_predictions(model, file)
     detect_res = predict[['name', 'confidence', 'xmin', 'ymin', 'xmax', 'ymax']]
-        
     texts = []
     
     for index, row in detect_res.iterrows():
@@ -30,6 +31,12 @@ async def extract_information_from_image(file: bytes = File(...)):
         texts.append({'content': text[0], 'confidence': text[1]})
     
     detect_res['text'] = texts
+    return JSONResponse(content=detect_res[['name', 'confidence', 'text']].to_dict(orient='records'))
     
-    result['results'] = json.loads(detect_res[['name', 'confidence', 'text']].to_json(orient='records'))
-    return result
+
+@app.post("/img_to_img")
+def image_to_image_with_bounding_boxes(file: bytes = File(...)):
+    input_image = bytes2image(file)
+    predict = image_predictions(model, file)
+    img_with_bbox = add_bboxs_on_img(input_image, predict)
+    return StreamingResponse(content=image2bytes(img_with_bbox), media_type="image/png")
