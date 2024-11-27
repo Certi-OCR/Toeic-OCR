@@ -1,4 +1,4 @@
-FROM tiangolo/uvicorn-gunicorn:python3.10
+FROM python:3.11-slim
 
 RUN apt update && \
     apt install -y htop libgl1-mesa-glx libglib2.0-0
