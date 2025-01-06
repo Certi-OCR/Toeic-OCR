@@ -17,10 +17,17 @@ from app.services.record import (
 router = APIRouter()
 
 
-@router.get("/", response_model=SuccessResponse[RecordOut], status_code=200)
+@router.get("", response_model=SuccessResponse[RecordOut], status_code=200)
 async def get_list_record():
     entities = await list_record()
-    dtos = mapper.to(List[RecordOut]).map(entities)
+    dtos = (
+        map(
+            lambda e: mapper.to(RecordOut).map(e, fields_mapping={"id": str(e.id)}),
+            entities,
+        )
+        if entities is not None
+        else []
+    )
     return SuccessResponse(
         data=dtos,
         status_code=200,
@@ -31,7 +38,7 @@ async def get_list_record():
 @router.get("/{id}", response_model=SuccessResponse[RecordOut], status_code=200)
 async def get_details_record(id: str):
     entity = await details_record(id)
-    dto = await mapper.to(RecordOut).map(entity)
+    dto = mapper.to(RecordOut).map(entity, fields_mapping={"id": str(entity.id)})
     return SuccessResponse(
         data=dto,
         status_code=200,
