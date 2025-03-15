@@ -8,25 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.common.error import BaseErrorResponse, NotFound
 from app.common.response import ErrorResponse
-from app.core.db.db import close_db_connect, connect_and_init_db
-from app.middlewares.auth import auth_guard
-from app.routes import auth, history, ocr, record
-
-
-@asynccontextmanager
-async def app_lifespan(app: FastAPI):
-    # Connect to DB
-    await connect_and_init_db()
-    yield
-    # Close connection to DB
-    await close_db_connect()
+from app.routes import ocr
 
 
 app = FastAPI(
     title="TOEIC OCR API",
     description="API for extracting information from TOEIC uploaded image or URL",
     version="1.0.0",
-    lifespan=app_lifespan,
 )
 
 
@@ -70,9 +58,6 @@ app.add_middleware(
 
 
 app.include_router(ocr.router, prefix="/api/ocr", tags=["ocr"])
-app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-app.include_router(record.router, prefix="/api/record", tags=["record"])
-app.include_router(history.router, prefix="/api/history", tags=["record"])
 
 
 # @auth_guard

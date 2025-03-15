@@ -11,19 +11,7 @@ class Config:
     version = "0.1.0"
     title = "releases"
 
-    app_settings = {
-        "db_name": os.getenv("DATABASE_NAME"),
-        "db_url": os.getenv("DATABASE_URL"),
-        "secret_key": os.getenv("SECRET_KEY", "secret"),
-        "algorithm": "HS256",
-        "access_token_expire_minutes": int(
-            os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30)
-        ),
-        "refresh_token_expire_days": int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", 10)),
-        "email_host": os.getenv("EMAIL_HOST"),
-        "email_user": os.getenv("EMAIL_USER"),
-        "email_pwd": os.getenv("EMAIL_PWD"),
-    }
+    app_settings = {}
 
     @classmethod
     def app_settings_validate(cls):
