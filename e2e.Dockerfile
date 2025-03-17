@@ -18,4 +18,4 @@ COPY . /app
 EXPOSE 8000
 
 # Set the command to run the application with Gunicorn and Uvicorn workers
-CMD ["uvicorn main:app --host 0.0.0.0 --port $PORT"]
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "--bind", "0.0.0.0:8000"]
