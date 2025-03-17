@@ -1,10 +1,12 @@
 from contextlib import asynccontextmanager
 import logging
+import os
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
 from app.common.error import BaseErrorResponse, NotFound
 from app.common.response import ErrorResponse
@@ -72,3 +74,8 @@ async def all_routes(request: Request):
 
 
 # app.add_middleware(ExceptionHandlerMiddleware)
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)

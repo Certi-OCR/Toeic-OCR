@@ -163,7 +163,7 @@ The JSON responses will typically include structured data such as:
 
    ```bash
    git clone https://github.com/Certi-OCR/Toeic-OCR.git
-   cd language-certificate-api
+   cd Toeic-OCR
    ```
 
 2. **Create a virtual environment**:
