@@ -20,4 +20,4 @@ COPY . /app
 # EXPOSE $PORT
 
 # Set the command to run the application with Gunicorn and Uvicorn workers
-CMD uvicorn app.main:app --host 0.0.0.0
+CMD uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
