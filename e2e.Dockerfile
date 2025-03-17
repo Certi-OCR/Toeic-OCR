@@ -14,10 +14,10 @@ WORKDIR /app
 # Copy application code
 COPY . /app
 
-ENV PORT=8000
+# ENV PORT=8000
 
-# # Expose the port
-EXPOSE $PORT
+# # # Expose the port
+# EXPOSE $PORT
 
 # Set the command to run the application with Gunicorn and Uvicorn workers
-CMD gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:$PORT
+CMD uvicorn app.main:app --host 0.0.0.0
