@@ -1,6 +1,6 @@
 from paddleocr import PaddleOCR
 
-ocr = PaddleOCR(use_angle_cls=True, use_gpu=False, cpu_threads=2) 
+ocr = PaddleOCR(det=False, rec=True, use_angle_cls=False, use_gpu=False, cpu_threads=2)
 
 def text_recognize(image):
     res = ocr.ocr(image, cls=True)
